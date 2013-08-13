@@ -1,51 +1,33 @@
 <?php
-
 class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 {
-
-    /**
-     * 
-     * This puts the application.ini setting in the registry
-     */
-    protected function _initConfig()
+    protected function _initView ()
     {
-        Zend_Registry::set('config', $this->getOptions());
+        // Initialize view
+        $view = new Zend_View();
+        $view->doctype('XHTML1_STRICT');
+        $view->headTitle('Zend CMS');
+        $view->skin = 'blues';
+        // Add it to the ViewRenderer
+        $viewRenderer = Zend_Controller_Action_HelperBroker::getStaticHelper('ViewRenderer');
+        $viewRenderer->setView($view);
+        // Return it, so that it can be stored by the bootstrap
+        return $view;
     }
-
-    /**
-     * 
-     * This function initializes routes so that http://host_name/login
-     * and http://host_name/logout is redirected to the user controller.
-     * 
-     * There is also a dynamic route for clean callback urls for the login 
-     * providers
-     */
-    protected function _initRoutes()
+    protected function _initMenus ()
     {
-        $front = Zend_Controller_Front::getInstance();
-        $router = $front->getRouter();
-
-        $route = new Zend_Controller_Router_Route('login/:provider',
-                                                  array(
-                                                  'controller' => 'user',
-                                                  'action' => 'login'
-                                                  ));
-        $router->addRoute('login/:provider', $route);
-
-        $route = new Zend_Controller_Router_Route_Static('login',
-                                                         array(
-                                                         'controller' => 'user',
-                                                         'action' => 'login'
-                                                         ));
-        $router->addRoute('login', $route);
-
-        $route = new Zend_Controller_Router_Route_Static('logout',
-                                                         array(
-                                                         'controller' => 'user',
-                                                         'action' => 'logout'
-                                                         ));
-        $router->addRoute('logout', $route);
+        $view = $this->getResource('view');
+        $view->mainMenuId = 1;
+        $view->adminMenuId = 2;
     }
-
+    protected function _initAutoload ()
+    {
+        // Add autoloader empty namespace
+        $autoLoader = Zend_Loader_Autoloader::getInstance();
+        $autoLoader->registerNamespace('CMS_');
+        $resourceLoader = new Zend_Loader_Autoloader_Resource(array('basePath' => APPLICATION_PATH , 'namespace' => '' , 'resourceTypes' => array('form' => array('path' => 'forms/' , 'namespace' => 'Form_') , 'model' => array('path' => 'models/' , 'namespace' => 'Model_'))));
+        // Return it so that it can be stored by the bootstrap
+        return $autoLoader;
+    }
 }
 
